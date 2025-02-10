@@ -1,15 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
-import 'package:realestate_app/Authentication/signup/signup.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
 
+import '../../Controllers/auth_controller.dart';
+import '../../Pages/HomePage.dart';
 import '../../Widgets/Custom_Button.dart';
 import '../../Widgets/Custom_Textfield.dart';
 import '../../Widgets/GradientDivider.dart';
-import '../../Widgets/MyText.dart';
-
+import '../signup/signup.dart';
 
 class Login extends StatefulWidget {
   const Login({super.key});
@@ -19,23 +18,17 @@ class Login extends StatefulWidget {
 }
 
 class _LoginState extends State<Login> {
-  List<String> numbers = []; // List to store numbers
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+
+  // Access the AuthController
+  final AuthController _authController = Get.find();
 
   @override
-  void initState() {
-    super.initState();
-  }
-
-  Future<void> login(String email, String password) async {
-    try {
-      UserCredential userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(
-        email: email,
-        password: password,
-      );
-      print("Logged in: ${userCredential.user!.email}");
-    } on FirebaseAuthException catch (e) {
-      print("Error: ${e.message}");
-    }
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
   }
 
   @override
@@ -57,19 +50,19 @@ class _LoginState extends State<Login> {
                       fontWeight: FontWeight.w500,
                     ),
                   ),
-                  SizedBox(height: 4.h,),
-
+                  SizedBox(height: 4.h),
                   Text(
-                    "Username",
+                    "Email Address",
                     style: TextStyle(
                       fontSize: 20.sp,
                     ),
                   ),
                   CustomTextfield(
-                    hintext: 'Username',
-                    prefixIcon: Icon(Icons.person),
+                    controller: _emailController,
+                    hintext: 'Email',
+                    prefixIcon: Icon(Icons.email),
                   ),
-                  SizedBox(height: 2.h,),
+                  SizedBox(height: 2.h),
                   Text(
                     "Password",
                     style: TextStyle(
@@ -77,18 +70,30 @@ class _LoginState extends State<Login> {
                     ),
                   ),
                   CustomTextfield(
-                    hintext: 'Username',
+                    controller: _passwordController,
+                    hintext: 'Password',
                     prefixIcon: Icon(Icons.vpn_key),
                     suffixIcon: Icon(Icons.remove_red_eye),
+                    obscureText: true,
                   ),
-                  SizedBox(height: 2.h,),
+                  SizedBox(height: 2.h),
                   CustomButton(
-                      text: Text("Sign in",style: TextStyle(
+                    onTap: () {
+                      // Call the login method from the controller
+                      _authController.login(
+                        _emailController.text.trim(),
+                        _passwordController.text.trim(),
+                      );
+                    },
+                    text: Text(
+                      "Sign in",
+                      style: TextStyle(
                         fontSize: 18.sp,
                         fontWeight: FontWeight.w500,
-                      ),),
+                      ),
+                    ),
                   ),
-                  SizedBox(height: 2.h,),
+                  SizedBox(height: 2.h),
                   Row(
                     children: [
                       Expanded(
@@ -110,17 +115,19 @@ class _LoginState extends State<Login> {
                       ),
                     ],
                   ),
-                  SizedBox(height: 2.h,),
+                  SizedBox(height: 2.h),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      SvgPicture.asset("assets/SVG/googleIcon.svg",
-                      height: 4.h,
+                      SvgPicture.asset(
+                        "assets/SVG/googleIcon.svg",
+                        height: 4.h,
                         width: 4.w,
                       ),
-                      SizedBox(width: 4.w,),
-                      SvgPicture.asset("assets/SVG/facebookIcon.svg",
-                      height: 4.h,
+                      SizedBox(width: 4.w),
+                      SvgPicture.asset(
+                        "assets/SVG/facebookIcon.svg",
+                        height: 4.h,
                         width: 4.w,
                       ),
                     ],
@@ -133,12 +140,13 @@ class _LoginState extends State<Login> {
               children: [
                 Text("Don't have an account?"),
                 TextButton(
-                    onPressed: () {
-                      Get.to(SignUp());
-                    },
-                    child: Text("Sign Up"))
+                  onPressed: () {
+                    Get.to(() => SignUp());
+                  },
+                  child: Text("Sign Up"),
+                ),
               ],
-            )
+            ),
           ],
         ),
       ),

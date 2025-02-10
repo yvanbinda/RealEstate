@@ -1,13 +1,14 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
 
+import '../../Controllers/auth_controller.dart';
 import '../../Widgets/Custom_Button.dart';
 import '../../Widgets/Custom_Textfield.dart';
 import '../../Widgets/GradientDivider.dart';
-import '../../Widgets/MyText.dart';
 import '../login/login.dart';
 import 'complete_profile.dart';
 
@@ -19,23 +20,21 @@ class SignUp extends StatefulWidget {
 }
 
 class _SignUpState extends State<SignUp> {
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+
+  // Access the AuthController
+  final AuthController _authController = Get.find();
 
   @override
-  void initState() {
-    super.initState();
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
   }
+  // Add this import
 
-  Future<void> login(String email, String password) async {
-    try {
-      UserCredential userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(
-        email: email,
-        password: password,
-      );
-      print("Logged in: ${userCredential.user!.email}");
-    } on FirebaseAuthException catch (e) {
-      print("Error: ${e.message}");
-    }
-  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -56,31 +55,7 @@ class _SignUpState extends State<SignUp> {
                       fontWeight: FontWeight.w500,
                     ),
                   ),
-                  SizedBox(height: 4.h,),
-                      
-                  Text(
-                    "Username",
-                    style: TextStyle(
-                      fontSize: 20.sp,
-                    ),
-                  ),
-                  CustomTextfield(
-                    hintext: 'Username',
-                    prefixIcon: Icon(Icons.person),
-                  ),
-                  SizedBox(height: 2.h,),
-                  Text(
-                    "Password",
-                    style: TextStyle(
-                      fontSize: 20.sp,
-                    ),
-                  ),
-                  CustomTextfield(
-                    hintext: 'Username',
-                    prefixIcon: Icon(Icons.vpn_key),
-                    suffixIcon: Icon(Icons.remove_red_eye),
-                  ),
-                  SizedBox(height: 2.h,),
+                  SizedBox(height: 4.h),
                   Text(
                     "Email Address",
                     style: TextStyle(
@@ -88,20 +63,42 @@ class _SignUpState extends State<SignUp> {
                     ),
                   ),
                   CustomTextfield(
-                    hintext: 'Username',
-                    prefixIcon: Icon(Icons.vpn_key),
+                    controller: _emailController,
+                    hintext: 'Email',
+                    prefixIcon: Icon(Icons.email),
+                    obscureText: false,
                   ),
-                  SizedBox(height: 2.h,),
+                  SizedBox(height: 2.h),
+                  Text(
+                    "Password",
+                    style: TextStyle(
+                      fontSize: 20.sp,
+                    ),
+                  ),
+                  CustomTextfield(
+                    controller: _passwordController,
+                    hintext: 'Password',
+                    prefixIcon: Icon(Icons.vpn_key),
+                    suffixIcon: Icon(Icons.remove_red_eye),
+                    obscureText: true,
+                  ),
+                  SizedBox(height: 2.h),
                   CustomButton(
                     onTap: () {
-                      Get.to(CompleteProfile());
+                      _authController.signUp(
+                          _emailController.text.trim(),
+                          _passwordController.text.trim()
+                      );
                     },
-                    text: Text("Sign Up",style: TextStyle(
-                      fontSize: 18.sp,
-                      fontWeight: FontWeight.w500,
-                    ),),
+                    text: Text(
+                      "Sign Up",
+                      style: TextStyle(
+                        fontSize: 18.sp,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
                   ),
-                  SizedBox(height: 2.h,),
+                  SizedBox(height: 2.h),
                   Row(
                     children: [
                       Expanded(
@@ -123,16 +120,18 @@ class _SignUpState extends State<SignUp> {
                       ),
                     ],
                   ),
-                  SizedBox(height: 2.h,),
+                  SizedBox(height: 2.h),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      SvgPicture.asset("assets/SVG/googleIcon.svg",
+                      SvgPicture.asset(
+                        "assets/SVG/googleIcon.svg",
                         height: 4.h,
                         width: 4.w,
                       ),
-                      SizedBox(width: 4.w,),
-                      SvgPicture.asset("assets/SVG/facebookIcon.svg",
+                      SizedBox(width: 4.w),
+                      SvgPicture.asset(
+                        "assets/SVG/facebookIcon.svg",
                         height: 4.h,
                         width: 4.w,
                       ),
@@ -146,10 +145,11 @@ class _SignUpState extends State<SignUp> {
               children: [
                 Text("Already have an account?"),
                 TextButton(
-                    onPressed: () {
-                      Get.to(Login());
-                    },
-                    child: Text("Sign In"))
+                  onPressed: () {
+                    Get.to(() => Login());
+                  },
+                  child: Text("Sign In"),
+                ),
               ],
             ),
           ],

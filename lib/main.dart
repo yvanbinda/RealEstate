@@ -6,9 +6,12 @@ import 'package:realestate_app/theme/dark_theme.dart';
 import 'package:realestate_app/theme/light_theme.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
 
+import 'Controllers/controller.dart';
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
+  Controller.initialize();
   runApp(const MyApp());
 }
 
