@@ -1,29 +1,115 @@
+import 'dart:io';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:realestate_app/Pages/services/firestore.dart';
-
+import 'package:image_picker/image_picker.dart';
 import '../Pages/HomePage.dart';
 
 class ProfileController extends GetxController {
-  final FirestoreService _firestoreService = FirestoreService();
-  final User user = FirebaseAuth.instance.currentUser!;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseStorage _storage = FirebaseStorage.instance;
 
-  final RxBool isLoading = false.obs;
+  final isLoading = false.obs;
+  RxString profilePictureUrl = ''.obs;
+  Rx<File?> selectedImage = Rx<File?>(null); // Holds selected image
 
-  Future<void> saveProfile(String username) async {
+  String get userId => _auth.currentUser?.uid ?? "";
+  late bool isAdmin;
+
+  /// **🔥 Pick Profile Picture from Gallery**
+  Future<void> pickProfileImage() async {
+    final ImagePicker picker = ImagePicker();
+    final XFile? image = await picker.pickImage(source: ImageSource.gallery);
+
+    if (image == null) {
+      Get.snackbar('Error', 'No image selected.');
+      return;
+    }
+
+    // Store selected image
+    selectedImage.value = File(image.path);
+  }
+
+
+  // Upload Profile Picture to Firebase Storage
+  Future<String?> uploadProfilePicture(File imageFile) async {
+    try {
+      String filePath = "profile_pictures/$userId.jpg";
+      Reference ref = _storage.ref().child(filePath);
+      UploadTask uploadTask = ref.putFile(imageFile);
+
+      // Show progress while uploading
+      Get.dialog(Center(child: CircularProgressIndicator()), barrierDismissible: false);
+
+      TaskSnapshot snapshot = await uploadTask;
+      String downloadUrl = await snapshot.ref.getDownloadURL();
+
+      // ✅ Ensure Firestore is updated
+      await _firestore.collection('users').doc(userId).set({
+        'profilePictureUrl': downloadUrl,
+      }, SetOptions(merge: true)); // ✅ Create or update document
+
+      profilePictureUrl.value = downloadUrl; // ✅ Update UI
+      Get.back(); // Close loading dialog
+      Get.snackbar('Success', 'Profile picture updated!', snackPosition: SnackPosition.BOTTOM, backgroundColor: Colors.green, colorText: Colors.white);
+
+      return downloadUrl; // ✅ Return the URL
+    } catch (e) {
+      Get.back();
+      Get.snackbar('Error', 'Failed to upload profile picture: $e', snackPosition: SnackPosition.BOTTOM, backgroundColor: Colors.red, colorText: Colors.white);
+      return null;
+    }
+  }
+
+  // Save Profile Information (After Uploading Picture)
+  Future<void> saveProfile(String username, String phone, bool isAdmin) async {
     try {
       isLoading.value = true;
-      await _firestoreService.saveProfileData(
-        userId: user.uid,
-        username: username,
-        email: user.email!,
-      );
+      final user = _auth.currentUser;
+      if (user == null) {
+        Get.snackbar('Error', 'User not authenticated');
+        return;
+      }
 
+      // ✅ Upload profile picture if a new one is selected
+      String? imageUrl = profilePictureUrl.value; // Use existing image if no new one is selected
+      if (selectedImage.value != null) {
+        String? uploadedUrl = await uploadProfilePicture(selectedImage.value!);
+        if (uploadedUrl != null) {
+          imageUrl = uploadedUrl; // ✅ Use uploaded URL
+        }
+      }
+
+      // ✅ Save profile details in Firestore
+      await _firestore.collection('users').doc(user.uid).set({
+        'username': username,
+        'email': user.email,
+        'phoneNumber': phone,
+        'isAdmin': isAdmin,
+        'profilePictureUrl': imageUrl, // ✅ Use new or existing image
+        'createdAt': Timestamp.now(),
+      }, SetOptions(merge: true)); // ✅ Prevent overwriting other fields
+
+      profilePictureUrl.value = imageUrl; // ✅ Update UI
+      isLoading.value = false;
       Get.offAll(() => HomePage());
     } catch (e) {
-      Get.snackbar('Error', 'Failed to save profile: $e');
-    } finally {
       isLoading.value = false;
+      Get.snackbar('Error', 'Failed to save profile: $e');
+    }
+  }
+
+  // Load User Profile from Firestore
+  Future<void> loadUserProfile() async {
+    final user = _auth.currentUser;
+    if (user != null) {
+      DocumentSnapshot userDoc = await _firestore.collection('users').doc(user.uid).get();
+      if (userDoc.exists) {
+        profilePictureUrl.value = userDoc['profilePictureUrl'] ?? '';
+      }
     }
   }
 }

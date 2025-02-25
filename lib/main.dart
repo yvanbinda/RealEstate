@@ -6,7 +6,10 @@ import 'package:realestate_app/theme/dark_theme.dart';
 import 'package:realestate_app/theme/light_theme.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
 
+import 'Controllers/auth_controller.dart';
 import 'Controllers/controller.dart';
+import 'Pages/Home/home.dart';
+import 'Pages/HomePage.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -18,17 +21,42 @@ Future<void> main() async {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return ResponsiveSizer(builder: (context, orientation, screenType) {
-      return GetMaterialApp(
-        debugShowCheckedModeBanner: false,
-        theme: lightMode,
-        darkTheme: darkMode,
-        home: Login(),
-      );
-    },);
+    return ResponsiveSizer(
+      builder: (context, orientation, screenType) {
+        return GetMaterialApp(
+          debugShowCheckedModeBanner: false,
+          theme: lightMode,
+          darkTheme: darkMode,
+          home: AuthWrapper(), // Use AuthWrapper to handle initial routing
+        );
+      },
+    );
   }
 }
 
+// AuthWrapper to check login status and redirect accordingly
+class AuthWrapper extends StatelessWidget {
+  final AuthController _authController = Get.put(AuthController());
+
+  @override
+  Widget build(BuildContext context) {
+    return Obx(() {
+      if (_authController.isLoading.value) {
+        // Show a loading indicator while checking auth state
+        return Scaffold(
+          body: Center(
+            child: CircularProgressIndicator(),
+          ),
+        );
+      } else if (_authController.user != null) {
+        // User is logged in, redirect to HomePage
+        return HomePage();
+      } else {
+        // User is not logged in, redirect to Login
+        return Login();
+      }
+    });
+  }
+}

@@ -4,7 +4,6 @@ import 'package:get/get.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
 
 import '../../Controllers/auth_controller.dart';
-import '../../Pages/HomePage.dart';
 import '../../Widgets/Custom_Button.dart';
 import '../../Widgets/Custom_Textfield.dart';
 import '../../Widgets/GradientDivider.dart';
@@ -78,14 +77,13 @@ class _LoginState extends State<Login> {
                   ),
                   SizedBox(height: 2.h),
                   CustomButton(
-                    onTap: () {
-                      // Call the login method from the controller
+                    onTap: () async {
                       _authController.login(
                         _emailController.text.trim(),
                         _passwordController.text.trim(),
                       );
                     },
-                    text: Text(
+                    widget: Text(
                       "Sign in",
                       style: TextStyle(
                         fontSize: 18.sp,

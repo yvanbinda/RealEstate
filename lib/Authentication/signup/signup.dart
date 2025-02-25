@@ -5,6 +5,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
 
+
 import '../../Controllers/auth_controller.dart';
 import '../../Widgets/Custom_Button.dart';
 import '../../Widgets/Custom_Textfield.dart';
@@ -32,9 +33,6 @@ class _SignUpState extends State<SignUp> {
     _passwordController.dispose();
     super.dispose();
   }
-  // Add this import
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -90,7 +88,7 @@ class _SignUpState extends State<SignUp> {
                           _passwordController.text.trim()
                       );
                     },
-                    text: Text(
+                    widget: Text(
                       "Sign Up",
                       style: TextStyle(
                         fontSize: 18.sp,

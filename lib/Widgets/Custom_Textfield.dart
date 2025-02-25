@@ -9,6 +9,9 @@ class CustomTextfield extends StatelessWidget {
   final TextEditingController? controller;
   final bool obscureText;
   final void Function(String)? onChanged;
+  final BorderSide? borderSide;
+  final bool? filled;
+  final Color? fillColor;
 
   const CustomTextfield({
     super.key,
@@ -19,6 +22,9 @@ class CustomTextfield extends StatelessWidget {
     this.controller,
     this.obscureText = false,
     this.onChanged,
+    this.borderSide,
+    this.filled,
+    this.fillColor,
   });
 
   @override
@@ -37,9 +43,11 @@ class CustomTextfield extends StatelessWidget {
           prefixStyle: textStyle,
           suffixStyle: textStyle,
           border: OutlineInputBorder(
-            borderSide: BorderSide(width: 2, color: Color(0xFF43464B)),
+            borderSide: borderSide ?? BorderSide(width: 2, color: Color(0xFF43464B)),
             borderRadius: BorderRadius.circular(15),
           ),
+          filled: filled,
+          fillColor: fillColor,
         ),
       ),
     );
