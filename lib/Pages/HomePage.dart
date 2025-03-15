@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:realestate_app/Controllers/profile_controller.dart';
 import 'package:realestate_app/Pages/Profile/profile.dart';
 import 'package:realestate_app/Pages/admin/admin_dashboard.dart';
-import 'package:realestate_app/test.dart';
+
 
 import '../Controllers/auth_controller.dart';
 import 'Home/home.dart';
 import 'Location/location.dart';
+import 'My house/my_house.dart';
 
 
 class HomePage extends StatefulWidget {
@@ -17,6 +19,7 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   int currentIndex = 0;
   final AuthController _authController = Get.find();
+  final ProfileController c = Get.find();
 
   @override
   void initState() {
@@ -40,7 +43,7 @@ class _HomePageState extends State<HomePage> {
         children: [
           Home(),
           Location(),
-          PropertyInputPage(),
+          MyHouse(),
           // condition to show Profile or Admin based on the user's role
           _authController.isAdmin.value == true ? AdminDashboard() : Profile(),
         ],
@@ -50,6 +53,8 @@ class _HomePageState extends State<HomePage> {
         onTap: (index) {
           setState(() {
             currentIndex = index;
+            print("________________user_________");
+            print(c.username.value);
           });
         },
         items: [

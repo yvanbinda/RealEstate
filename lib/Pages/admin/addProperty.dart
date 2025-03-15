@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
@@ -7,16 +6,31 @@ import 'package:responsive_sizer/responsive_sizer.dart';
 
 import '../../Controllers/addProperty_controller.dart';
 import '../../Widgets/Custom_Button.dart';
-import '../../Widgets/GradientDivider.dart';
 
 class Addproperty extends StatelessWidget {
   final AddPropertyController c = Get.put(AddPropertyController());
 
   @override
   Widget build(BuildContext context) {
+    // Check if the page is in editing mode
+    final bool isEditing = Get.arguments?['isEditing'] ?? false;
+    final Map<String, dynamic>? property = Get.arguments?['property'];
+
+    // Display the fields with the property data if in editing mode
+    if (isEditing && property != null) {
+      c.selectedPropertyType.value = property['propertyType'] ?? '';
+      c.titleController.text = property['title'] ?? '';
+      c.addressController.text = property['address'] ?? '';
+      c.bedroomController.text = property['bedrooms']?.toString() ?? '';
+      c.bathroomController.text = property['bathrooms']?.toString() ?? '';
+      c.propertyPriceController.text = property['propertyPrice']?.toString() ?? '';
+      c.descriptionController.text = property['description'] ?? '';
+      // Handle images if needed
+    }
+
     return Scaffold(
       appBar: AppBar(
-        title: Text("Add Property"),
+        title: Text(isEditing ? "Edit Property" : "Add Property"),
         titleSpacing: 25.w,
       ),
       body: ListView(
@@ -32,11 +46,16 @@ class Addproperty extends StatelessWidget {
               border: OutlineInputBorder(borderRadius: BorderRadius.circular(15)),
               hintText: "Select Property type",
             ),
-            value: c.selectedPropertyType.value,
-            items: ["House", "Apartment", "Studio", "Room", "Meubler"]
-                .map((item) => DropdownMenuItem(value: item, child: Text(item)))
-                .toList(),
-            onChanged: (value) => c.selectedPropertyType.value = value,
+            value: c.selectedPropertyType.value.isEmpty ? null : c.selectedPropertyType.value,
+            items: c.propertyTypes.map((item) => DropdownMenuItem(
+              value: item,
+              child: Text(item),
+            )).toList(),
+            onChanged: (value) {
+              if (value != null) {
+                c.selectedPropertyType.value = value;
+              }
+            },
           )),
 
           SizedBox(height: 2.h),
@@ -46,7 +65,7 @@ class Addproperty extends StatelessWidget {
           CustomTextfield(
             hintext: 'Property Title',
             obscureText: false,
-            onChanged: (value) => c.title.value = value,
+            controller: c.titleController,
           ),
           SizedBox(height: 2.h),
 
@@ -55,7 +74,7 @@ class Addproperty extends StatelessWidget {
           CustomTextfield(
             hintext: 'Property Address',
             obscureText: false,
-            onChanged: (value) => c.address.value = value,
+            controller: c.addressController,
           ),
           SizedBox(height: 2.h),
 
@@ -72,10 +91,10 @@ class Addproperty extends StatelessWidget {
                     children: [
                       Icon(Icons.bed, color: Colors.grey, size: 25.sp),
                       SizedBox(width: 1.w),
-                      Obx(() => SizedBox(
+                      SizedBox(
                         width: 10.w,
                         child: TextFormField(
-                          controller: TextEditingController(text: c.bedrooms.value.toString()),
+                          controller: c.bedroomController,
                           keyboardType: TextInputType.number,
                           textAlign: TextAlign.center,
                           inputFormatters: [FilteringTextInputFormatter.digitsOnly],
@@ -84,7 +103,7 @@ class Addproperty extends StatelessWidget {
                             contentPadding: EdgeInsets.symmetric(vertical: 5),
                           ),
                         ),
-                      )),
+                      ),
                     ],
                   ),
                 ],
@@ -99,10 +118,10 @@ class Addproperty extends StatelessWidget {
                     children: [
                       Icon(Icons.bathtub, color: Colors.grey, size: 25.sp),
                       SizedBox(width: 1.w),
-                      Obx(() => SizedBox(
+                      SizedBox(
                         width: 10.w,
                         child: TextFormField(
-                          controller: TextEditingController(text: c.bathrooms.value.toString()),
+                          controller: c.bathroomController,
                           keyboardType: TextInputType.number,
                           textAlign: TextAlign.center,
                           inputFormatters: [FilteringTextInputFormatter.digitsOnly],
@@ -111,7 +130,7 @@ class Addproperty extends StatelessWidget {
                             contentPadding: EdgeInsets.symmetric(vertical: 5),
                           ),
                         ),
-                      )),
+                      ),
                     ],
                   ),
                 ],
@@ -124,8 +143,8 @@ class Addproperty extends StatelessWidget {
           Row(
             children: [
               Expanded(
-                child: Obx(() => TextFormField(
-                  controller: TextEditingController(text: c.bedrooms.value.toString()),
+                child: TextFormField(
+                  controller: c.propertyPriceController,
                   keyboardType: TextInputType.number,
                   textAlign: TextAlign.center,
                   inputFormatters: [FilteringTextInputFormatter.digitsOnly],
@@ -133,9 +152,9 @@ class Addproperty extends StatelessWidget {
                     border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
                     contentPadding: EdgeInsets.symmetric(vertical: 5),
                   ),
-                )),
+                ),
               ),
-              SizedBox(width: 40.w,),
+              SizedBox(width: 40.w),
             ],
           ),
           SizedBox(height: 2.h),
@@ -144,10 +163,10 @@ class Addproperty extends StatelessWidget {
           Text("Description", style: TextStyle(fontSize: 16.sp, fontWeight: FontWeight.w500)),
           TextFormField(
             maxLines: 4,
+            controller: c.descriptionController,
             decoration: InputDecoration(
               border: OutlineInputBorder(borderRadius: BorderRadius.circular(15)),
             ),
-            onChanged: (value) => c.description.value = value,
           ),
           SizedBox(height: 2.h),
 
@@ -166,27 +185,15 @@ class Addproperty extends StatelessWidget {
             ),
           ),
 
-          c.galleryImages.isNotEmpty
-              ? SizedBox(
-            height: 80,
-            child: ListView(
-              scrollDirection: Axis.horizontal,
-              children: c.galleryImages.map((file) {
-                return Padding(
-                  padding: const EdgeInsets.all(4.0),
-                  child: Image.file(file, width: 60, height: 60, fit: BoxFit.cover),
-                );
-              }).toList(),
-            ),
-          )
-              : Container(),
-
           // Image Preview
           Obx(() => Wrap(
             spacing: 8,
-            children: c.galleryImages
-                .map((file) => Image.file(file, width: 50, height: 50, fit: BoxFit.cover))
-                .toList(),
+            children: c.galleryImages.map((file) => Image.file(
+              file,
+              width: 50,
+              height: 50,
+              fit: BoxFit.cover,
+            )).toList(),
           )),
 
           SizedBox(height: 2.h),
@@ -195,8 +202,41 @@ class Addproperty extends StatelessWidget {
 
       // Publish Button
       floatingActionButton: FloatingActionButton(
-        onPressed: c.publishProperty,
-        child: Text("Publish"),
+        onPressed: () {
+          if (c.titleController.text.isEmpty ||
+              c.addressController.text.isEmpty ||
+              c.bedroomController.text.isEmpty ||
+              c.bathroomController.text.isEmpty ||
+              c.propertyPriceController.text.isEmpty ||
+              c.descriptionController.text.isEmpty) {
+            Get.snackbar("Error", "Please fill all fields");
+            return;
+          }
+
+          if (isEditing) {
+            // Update the existing property
+            c.updateProperty(
+              id: property!['id'],
+              address: c.addressController.text,
+              description: c.descriptionController.text,
+              propertyPrice: c.propertyPriceController.text,
+              title: c.titleController.text,
+              bathroom: c.bathroomController.text,
+              bedroom: c.bedroomController.text,
+            );
+          } else {
+            // Add a new property
+            c.publishProperty(
+              address: c.addressController.text,
+              description: c.descriptionController.text,
+              propertyPrice: c.propertyPriceController.text,
+              title: c.titleController.text,
+              bathroom: c.bathroomController.text,
+              bedroom: c.bedroomController.text,
+            );
+          }
+        },
+        child: Text(isEditing ? "Update" : "Publish"),
       ),
     );
   }

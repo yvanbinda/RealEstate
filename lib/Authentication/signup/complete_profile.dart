@@ -50,7 +50,7 @@ class _CompleteProfileState extends State<CompleteProfile> {
               ),
               SizedBox(height: 2.h),
 
-              // 🔹 PROFILE PICTURE
+              // PROFILE PICTURE
               GestureDetector(
                 onTap: () async {
                   await _profileController.pickProfileImage();
@@ -68,7 +68,6 @@ class _CompleteProfileState extends State<CompleteProfile> {
                       : null,
                 )),
               ),
-
 
               SizedBox(height: 2.h),
 
@@ -111,7 +110,7 @@ class _CompleteProfileState extends State<CompleteProfile> {
 
               SizedBox(height: 2.h),
 
-              // 🔹 COMPLETE PROFILE BUTTON
+              // COMPLETE PROFILE BUTTON
               Obx(() => CustomButton(
                 onTap: _profileController.isLoading.value
                     ? null

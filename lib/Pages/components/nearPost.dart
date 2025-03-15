@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
-import 'package:get/get.dart';
 
 class NearPost extends StatelessWidget {
   final String title;
   final String type;
   final String location;
-  final String imageUrl;
+  final String? imageUrl;
   final String price;
   final String bedrooms;
   final String bathrooms;
@@ -16,7 +15,7 @@ class NearPost extends StatelessWidget {
     required this.title,
     required this.type,
     required this.location,
-    required this.imageUrl,
+    this.imageUrl,
     required this.price,
     required this.bedrooms,
     required this.bathrooms,
@@ -26,7 +25,7 @@ class NearPost extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       color: Colors.black,
-      margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+      margin: const EdgeInsets.symmetric(vertical: 8),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
       child: Padding(
         padding: const EdgeInsets.all(10.0),
@@ -35,28 +34,43 @@ class NearPost extends StatelessWidget {
           children: [
             ClipRRect(
               borderRadius: BorderRadius.circular(10),
-              child: Image.asset(
-                imageUrl,
+              child: imageUrl != null
+                  ? Image.network(
+                imageUrl!,
                 width: 30.w,
                 height: 18.h,
                 fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) {
+                  return Container(
+                    width: 30.w,
+                    height: 18.h,
+                    color: Colors.grey,
+                    child: Icon(Icons.image, color: Colors.white),
+                  );
+                },
+              )
+                  : Container(
+                width: 30.w,
+                height: 18.h,
+                color: Colors.grey,
+                child: Icon(Icons.image, color: Colors.white),
               ),
             ),
-             SizedBox(width: 2.w),
+            SizedBox(width: 2.w),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
                     children: [
-                       Spacer(),
+                      Spacer(),
                       Text(
                         type,
                         style: TextStyle(color: Colors.blueAccent, fontSize: 18.sp),
                       ),
                     ],
                   ),
-                   SizedBox(height: 1.h),
+                  SizedBox(height: 1.h),
                   Text(
                     title,
                     style: TextStyle(
@@ -65,30 +79,30 @@ class NearPost extends StatelessWidget {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                   SizedBox(height: 1.h),
+                  SizedBox(height: 1.h),
                   Text(
                     location,
                     style: TextStyle(color: Colors.white70, fontSize: 16.sp),
                   ),
-                   SizedBox(height: 1.h),
+                  SizedBox(height: 1.h),
                   Row(
                     children: [
-                       Icon(Icons.bed, color: Colors.white70, size: 20.sp),
-                       SizedBox(width: 1.w),
+                      Icon(Icons.bed, color: Colors.white70, size: 20.sp),
+                      SizedBox(width: 1.w),
                       Text(
-                        bedrooms.toString(),
+                        bedrooms,
                         style: const TextStyle(color: Colors.white70),
                       ),
-                       SizedBox(width: 2.w),
-                       Icon(Icons.bathtub, color: Colors.white70, size: 20.sp),
-                       SizedBox(width: 1.w),
+                      SizedBox(width: 2.w),
+                      Icon(Icons.bathtub, color: Colors.white70, size: 20.sp),
+                      SizedBox(width: 1.w),
                       Text(
-                        bathrooms.toString(),
+                        bathrooms,
                         style: const TextStyle(color: Colors.white70),
                       ),
-                       Spacer(),
+                      Spacer(),
                       Text(
-                        "${price.toString()} CFA/month",
+                        "$price CFA/month",
                         style: TextStyle(
                           color: Colors.blueAccent,
                           fontSize: 14,

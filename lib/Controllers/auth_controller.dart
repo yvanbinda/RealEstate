@@ -87,8 +87,9 @@ class AuthController extends GetxController {
         email: email,
         password: password,
       );
-
+      print("--------Login successful: ${userCredential.user?.uid}");
       if (userCredential.user != null) {
+        print("______faldsr+_______");
         await checkProfileCompletion(userCredential.user!.uid);
       }
     } on FirebaseAuthException catch (e) {

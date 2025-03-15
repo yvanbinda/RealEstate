@@ -14,12 +14,13 @@ class ProfileController extends GetxController {
 
   final isLoading = false.obs;
   RxString profilePictureUrl = ''.obs;
-  Rx<File?> selectedImage = Rx<File?>(null); // Holds selected image
+  Rx<File?> selectedImage = Rx<File?>(null);
+  RxString username = ''.obs; // Observable for username
 
   String get userId => _auth.currentUser?.uid ?? "";
   late bool isAdmin;
 
-  /// **🔥 Pick Profile Picture from Gallery**
+  /// Pick Profile Picture from Gallery
   Future<void> pickProfileImage() async {
     final ImagePicker picker = ImagePicker();
     final XFile? image = await picker.pickImage(source: ImageSource.gallery);
@@ -32,7 +33,6 @@ class ProfileController extends GetxController {
     // Store selected image
     selectedImage.value = File(image.path);
   }
-
 
   // Upload Profile Picture to Firebase Storage
   Future<String?> uploadProfilePicture(File imageFile) async {
@@ -47,16 +47,16 @@ class ProfileController extends GetxController {
       TaskSnapshot snapshot = await uploadTask;
       String downloadUrl = await snapshot.ref.getDownloadURL();
 
-      // ✅ Ensure Firestore is updated
+      // Update Firestore
       await _firestore.collection('users').doc(userId).set({
         'profilePictureUrl': downloadUrl,
-      }, SetOptions(merge: true)); // ✅ Create or update document
+      }, SetOptions(merge: true));
 
-      profilePictureUrl.value = downloadUrl; // ✅ Update UI
-      Get.back(); // Close loading dialog
+      profilePictureUrl.value = downloadUrl;
+      Get.back();
       Get.snackbar('Success', 'Profile picture updated!', snackPosition: SnackPosition.BOTTOM, backgroundColor: Colors.green, colorText: Colors.white);
 
-      return downloadUrl; // ✅ Return the URL
+      return downloadUrl; // Return the URL
     } catch (e) {
       Get.back();
       Get.snackbar('Error', 'Failed to upload profile picture: $e', snackPosition: SnackPosition.BOTTOM, backgroundColor: Colors.red, colorText: Colors.white);
@@ -74,27 +74,32 @@ class ProfileController extends GetxController {
         return;
       }
 
-      // ✅ Upload profile picture if a new one is selected
+      // Upload profile picture if a new one is selected
       String? imageUrl = profilePictureUrl.value; // Use existing image if no new one is selected
       if (selectedImage.value != null) {
         String? uploadedUrl = await uploadProfilePicture(selectedImage.value!);
         if (uploadedUrl != null) {
-          imageUrl = uploadedUrl; // ✅ Use uploaded URL
+          imageUrl = uploadedUrl;
         }
       }
 
-      // ✅ Save profile details in Firestore
+      // Save profile details in Firestore
       await _firestore.collection('users').doc(user.uid).set({
         'username': username,
         'email': user.email,
         'phoneNumber': phone,
         'isAdmin': isAdmin,
-        'profilePictureUrl': imageUrl, // ✅ Use new or existing image
+        'profilePictureUrl': imageUrl,
         'createdAt': Timestamp.now(),
-      }, SetOptions(merge: true)); // ✅ Prevent overwriting other fields
+      }, SetOptions(merge: true));
 
-      profilePictureUrl.value = imageUrl; // ✅ Update UI
+      print("_____________Username saved+________: ${this.username.value}");
+      // Update observables
+      this.username.value = username; // Update username observable
+      profilePictureUrl.value = imageUrl;
       isLoading.value = false;
+
+      // Navigate to HomePage
       Get.offAll(() => HomePage());
     } catch (e) {
       isLoading.value = false;
@@ -109,6 +114,9 @@ class ProfileController extends GetxController {
       DocumentSnapshot userDoc = await _firestore.collection('users').doc(user.uid).get();
       if (userDoc.exists) {
         profilePictureUrl.value = userDoc['profilePictureUrl'] ?? '';
+        username.value = userDoc['username'] ?? '';
+
+        print("_________________________Username loaded--------------: ${username.value}");
       }
     }
   }

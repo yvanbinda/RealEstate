@@ -27,7 +27,7 @@ class DatabaseHelper {
     );
   }
 
-  // Create Tables (Users + Properties)**
+  // Create Tables (Users + Properties)
   Future<void> _onCreate(Database db, int version) async {
     await db.execute('''
       CREATE TABLE users(
@@ -49,7 +49,7 @@ class DatabaseHelper {
     ''');
   }
 
-  // Upgrade Database Schema**
+  // Upgrade Database Schema
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
     if (oldVersion < 2) {
       await db.execute('''

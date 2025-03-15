@@ -32,21 +32,35 @@ class AdminDashboard extends StatelessWidget {
           itemCount: c.properties.length,
           itemBuilder: (context, index) {
             final property = c.properties[index];
-            return NearPost(
-              title: property['title'],
-              type: property['propertyType'],
-              bathrooms: property['bathrooms'].toString(),
-              bedrooms: property['bedrooms'].toString(),
-              imageUrl: property['images'][0],
-              location: property['address'],
-              price: property['propertyPrice'].toString(),
+            return GestureDetector(
+              onTap: () {
+                // Navigate to Addproperty page with the selected property's data
+                Get.to(() => Addproperty(), arguments: {
+                  'isEditing': true,
+                  'property': property,
+                });
+              },
+              child: NearPost(
+                title: property['title'] ?? "No Title",
+                type: property['propertyType'] ?? "No Type",
+                bathrooms: property['bathrooms']?.toString() ?? "0",
+                bedrooms: property['bedrooms']?.toString() ?? "0",
+                imageUrl: property['images'] != null && property['images'].isNotEmpty
+                    ? property['images'][0]
+                    : null, // Use the first image if available
+                location: property['address'] ?? "No Address",
+                price: property['propertyPrice']?.toString() ?? "0",
+              ),
             );
           },
         );
       }),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          Get.to(Addproperty());
+          // Navigate to Addproperty page for adding a new property
+          Get.to(() => Addproperty(), arguments: {
+            'isEditing': false,
+          });
         },
         child: Icon(Icons.add, size: 25.sp),
       ),

@@ -9,32 +9,56 @@ class AddPropertyController extends GetxController {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseStorage _storage = FirebaseStorage.instance;
 
+  // List to store properties fetched from Firestore
   var properties = <Map<String, dynamic>>[].obs;
 
   @override
   void onInit() {
     super.onInit();
-    fetchProperties();
+    fetchProperties(); // Fetch properties when the controller is initialized
   }
 
+  // Fetch properties from Firestore
   void fetchProperties() async {
     try {
       QuerySnapshot snapshot = await _firestore.collection("properties").get();
-      properties.assignAll(snapshot.docs.map((doc) => doc.data() as Map<String, dynamic>).toList());
+      properties.assignAll(snapshot.docs.map((doc) {
+        final data = doc.data() as Map<String, dynamic>;
+        return {
+          ...data,
+          'id': doc.id, // Include the document ID for reference
+        };
+      }).toList());
     } catch (e) {
       print("Error fetching properties: $e");
+      Get.snackbar("Error", "Failed to fetch properties: $e");
     }
   }
 
+  // TextEditingControllers for form fields
+  final titleController = TextEditingController();
+  final addressController = TextEditingController();
+  final bedroomController = TextEditingController();
+  final bathroomController = TextEditingController();
+  final propertyPriceController = TextEditingController();
+  final descriptionController = TextEditingController();
+
   // Property Fields
-  var selectedPropertyType = RxnString(null);
-  var title = ''.obs;
-  var address = ''.obs;
-  var description = ''.obs;
-  var propertyPrice = ''.obs;
-  var bedrooms = 0.obs;
-  var bathrooms = 0.obs;
+  RxString selectedPropertyType = ''.obs;
+  final propertyTypes = ["House", "Apartment", "Studio", "Room", "Meubler"].obs;
   var galleryImages = <File>[].obs;
+
+  // Clear all controllers
+  void clearControllers() {
+    titleController.clear();
+    addressController.clear();
+    bedroomController.clear();
+    bathroomController.clear();
+    propertyPriceController.clear();
+    descriptionController.clear();
+    selectedPropertyType.value = '';
+    galleryImages.clear();
+  }
 
   // Pick images (Clears previous selection before picking new ones)
   Future<void> pickGalleryImages() async {
@@ -70,16 +94,31 @@ class AddPropertyController extends GetxController {
   }
 
   // Publish Property to Firestore
-  Future<void> publishProperty() async {
-    if (title.value.isEmpty ||
-        address.value.isEmpty ||
-        propertyPrice.value.isEmpty ||
-        description.value.isEmpty ||
-        selectedPropertyType.value == null) {
-      Get.snackbar("Error", "All fields are required", backgroundColor: Colors.red, colorText: Colors.white);
+  Future<void> publishProperty({
+    required String title,
+    required String address,
+    required String propertyPrice,
+    required String description,
+    required String bedroom,
+    required String bathroom,
+  }) async {
+    // Validate required fields
+    if (title.isEmpty ||
+        address.isEmpty ||
+        propertyPrice.isEmpty ||
+        description.isEmpty ||
+        bedroom.isEmpty ||
+        bathroom.isEmpty) {
+      Get.snackbar(
+        "Error",
+        "All fields are required",
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
       return;
     }
 
+    // Show loading dialog
     Get.dialog(
       Center(child: CircularProgressIndicator()),
       barrierDismissible: false,
@@ -89,46 +128,119 @@ class AddPropertyController extends GetxController {
       // Upload images and get URLs
       List<String> imageUrls = await uploadImagesToFirebase();
 
-      // ✅ Fix: Ensure at least one image is uploaded before saving to Firestore
-      if (imageUrls.isEmpty) {
-        Get.back();
-        Get.snackbar("Error", "You must upload at least one image", backgroundColor: Colors.red, colorText: Colors.white);
-        return;
-      }
-
       // Save property details to Firestore
       await _firestore.collection("properties").add({
-        "title": title.value,
-        "address": address.value,
-        "propertyPrice": propertyPrice.value,
-        "description": description.value,
+        "title": title,
+        "address": address,
+        "propertyPrice": propertyPrice,
+        "description": description,
         "propertyType": selectedPropertyType.value,
-        "bedrooms": bedrooms.value,
-        "bathrooms": bathrooms.value,
+        "bedrooms": int.tryParse(bedroom) ?? 0,
+        "bathrooms": int.tryParse(bathroom) ?? 0,
         "images": imageUrls,
         "createdAt": FieldValue.serverTimestamp(),
       });
 
+      // Close loading dialog
       Get.back();
-      Get.snackbar("Success", "Property Added Successfully", backgroundColor: Colors.green, colorText: Colors.white);
 
-      // Reset fields
-      title.value = "";
-      address.value = "";
-      propertyPrice.value = "";
-      description.value = "";
-      bedrooms.value = 0;
-      bathrooms.value = 0;
-      selectedPropertyType.value = null;
-      galleryImages.clear();
+      // Show success message
+      Get.snackbar(
+        "Success",
+        "Property Added Successfully",
+        backgroundColor: Colors.green,
+        colorText: Colors.white,
+      );
 
-      // Close the page
-      Future.delayed(Duration(seconds: 2), () {
+      // Clear controllers and reset fields
+      clearControllers();
+
+      // Fetch updated properties list
+      fetchProperties();
+
+      // Close the page after 5 seconds
+      Future.delayed(Duration(seconds: 5), () {
         Get.back();
       });
     } catch (e) {
-      Get.back(); // Close loading dialog
-      Get.snackbar("Error", "Failed to add property: $e", backgroundColor: Colors.red, colorText: Colors.white);
+      // Close loading dialog
+      Get.back();
+
+      // Show error message
+      Get.snackbar(
+        "Error",
+        "Failed to add property: $e",
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+    }
+  }
+
+  // Update property
+  Future<void> updateProperty({
+    required String id,
+    required String title,
+    required String address,
+    required String propertyPrice,
+    required String description,
+    required String bedroom,
+    required String bathroom,
+  }) async {
+    // Validate required fields
+    if (title.isEmpty ||
+        address.isEmpty ||
+        propertyPrice.isEmpty ||
+        description.isEmpty ||
+        bedroom.isEmpty ||
+        bathroom.isEmpty) {
+      Get.snackbar("Error", "All fields are required");
+      return;
+    }
+
+    // Show loading dialog
+    Get.dialog(
+      Center(child: CircularProgressIndicator()),
+      barrierDismissible: false,
+    );
+
+    try {
+      // Upload images and get URLs (if new images are added)
+      List<String> imageUrls = await uploadImagesToFirebase();
+
+      // Update property details in Firestore
+      await _firestore.collection("properties").doc(id).update({
+        "title": title,
+        "address": address,
+        "propertyPrice": propertyPrice,
+        "description": description,
+        "propertyType": selectedPropertyType.value,
+        "bedrooms": int.tryParse(bedroom) ?? 0,
+        "bathrooms": int.tryParse(bathroom) ?? 0,
+        "images": imageUrls.isNotEmpty ? imageUrls : FieldValue.delete(), // Update images if new ones are added
+      });
+
+      // Close loading dialog
+      Get.back();
+
+      // Show success message
+      Get.snackbar("Success", "Property Updated Successfully");
+
+      // Clear controllers and reset fields
+      clearControllers();
+
+      // Fetch updated properties list
+      fetchProperties();
+
+      // Close the page after 5 seconds
+      Future.delayed(Duration(seconds: 5), () {
+        Get.back();
+      });
+    } catch (e) {
+      // Close loading dialog
+      Get.back();
+
+      // Show error message
+      Get.snackbar("Error", "Failed to update property: $e");
     }
   }
 }
