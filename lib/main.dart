@@ -1,7 +1,7 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:realestate_app/Authentication/login/login.dart';
+import 'package:realestate_app/Pages/Authentication/login/login.dart';
 import 'package:realestate_app/firebase_options.dart';
 import 'package:realestate_app/theme/dark_theme.dart';
 import 'package:realestate_app/theme/light_theme.dart';
@@ -32,7 +32,8 @@ class MyApp extends StatelessWidget {
           debugShowCheckedModeBanner: false,
           theme: lightMode,
           darkTheme: darkMode,
-          home: AuthWrapper(), // Use AuthWrapper to handle initial routing
+          // AuthWrapper To handle initial routing
+          home: AuthWrapper(),
         );
       },
     );
@@ -46,8 +47,8 @@ class AuthWrapper extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Obx(() {
+      // check auth state
       if (_authController.isLoading.value) {
-        // Show a loading indicator while checking auth state
         return Scaffold(
           body: Center(
             child: CircularProgressIndicator(),

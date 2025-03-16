@@ -3,8 +3,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get/get.dart';
 import 'package:realestate_app/services/firestore.dart';
 
-import '../Authentication/login/login.dart';
-import '../Authentication/signup/complete_profile.dart';
+import '../Pages/Authentication/login/login.dart';
+import '../Pages/Authentication/signup/complete_profile.dart';
 import '../Pages/HomePage.dart';
 
 class AuthController extends GetxController {

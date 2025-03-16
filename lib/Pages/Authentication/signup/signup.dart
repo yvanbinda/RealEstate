@@ -3,20 +3,22 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
 
-import '../../Controllers/auth_controller.dart';
-import '../../Widgets/Custom_Button.dart';
-import '../../Widgets/Custom_Textfield.dart';
-import '../../Widgets/GradientDivider.dart';
-import '../signup/signup.dart';
 
-class Login extends StatefulWidget {
-  const Login({super.key});
+import '../../../Controllers/auth_controller.dart';
+import '../../../Widgets/Custom_Button.dart';
+import '../../../Widgets/Custom_Textfield.dart';
+import '../../../Widgets/GradientDivider.dart';
+import '../login/login.dart';
+
+
+class SignUp extends StatefulWidget {
+  const SignUp({super.key});
 
   @override
-  _LoginState createState() => _LoginState();
+  _SignUpState createState() => _SignUpState();
 }
 
-class _LoginState extends State<Login> {
+class _SignUpState extends State<SignUp> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
@@ -43,7 +45,7 @@ class _LoginState extends State<Login> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    "Sign in",
+                    "Sign Up",
                     style: TextStyle(
                       fontSize: 25.sp,
                       fontWeight: FontWeight.w500,
@@ -60,6 +62,7 @@ class _LoginState extends State<Login> {
                     controller: _emailController,
                     hintext: 'Email',
                     prefixIcon: Icon(Icons.email),
+                    obscureText: false,
                   ),
                   SizedBox(height: 2.h),
                   Text(
@@ -77,14 +80,14 @@ class _LoginState extends State<Login> {
                   ),
                   SizedBox(height: 2.h),
                   CustomButton(
-                    onTap: () async {
-                      _authController.login(
-                        _emailController.text.trim(),
-                        _passwordController.text.trim(),
+                    onTap: () {
+                      _authController.signUp(
+                          _emailController.text.trim(),
+                          _passwordController.text.trim()
                       );
                     },
                     widget: Text(
-                      "Sign in",
+                      "Sign Up",
                       style: TextStyle(
                         fontSize: 18.sp,
                         fontWeight: FontWeight.w500,
@@ -136,12 +139,12 @@ class _LoginState extends State<Login> {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text("Don't have an account?"),
+                Text("Already have an account?"),
                 TextButton(
                   onPressed: () {
-                    Get.to(() => SignUp());
+                    Get.to(() => Login());
                   },
-                  child: Text("Sign Up"),
+                  child: Text("Sign In"),
                 ),
               ],
             ),

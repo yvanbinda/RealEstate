@@ -3,11 +3,11 @@ import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
 
-import '../../Controllers/profile_controller.dart';
-import '../../Pages/HomePage.dart';
-import '../../Widgets/Custom_Button.dart';
-import '../../Widgets/Custom_Textfield.dart';
-import '../../Widgets/GradientDivider.dart';
+import '../../../Controllers/profile_controller.dart';
+import '../../../Widgets/Custom_Button.dart';
+import '../../../Widgets/Custom_Textfield.dart';
+
+
 
 class CompleteProfile extends StatefulWidget {
   const CompleteProfile({super.key});

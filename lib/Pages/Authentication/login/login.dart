@@ -1,26 +1,22 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 import 'package:responsive_sizer/responsive_sizer.dart';
 
+import '../../../Controllers/auth_controller.dart';
+import '../../../Widgets/Custom_Button.dart';
+import '../../../Widgets/Custom_Textfield.dart';
+import '../../../Widgets/GradientDivider.dart';
+import '../signup/signup.dart';
 
-import '../../Controllers/auth_controller.dart';
-import '../../Widgets/Custom_Button.dart';
-import '../../Widgets/Custom_Textfield.dart';
-import '../../Widgets/GradientDivider.dart';
-import '../login/login.dart';
-import 'complete_profile.dart';
-
-class SignUp extends StatefulWidget {
-  const SignUp({super.key});
+class Login extends StatefulWidget {
+  const Login({super.key});
 
   @override
-  _SignUpState createState() => _SignUpState();
+  _LoginState createState() => _LoginState();
 }
 
-class _SignUpState extends State<SignUp> {
+class _LoginState extends State<Login> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
@@ -47,7 +43,7 @@ class _SignUpState extends State<SignUp> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text(
-                    "Sign Up",
+                    "Sign in",
                     style: TextStyle(
                       fontSize: 25.sp,
                       fontWeight: FontWeight.w500,
@@ -64,7 +60,6 @@ class _SignUpState extends State<SignUp> {
                     controller: _emailController,
                     hintext: 'Email',
                     prefixIcon: Icon(Icons.email),
-                    obscureText: false,
                   ),
                   SizedBox(height: 2.h),
                   Text(
@@ -82,14 +77,14 @@ class _SignUpState extends State<SignUp> {
                   ),
                   SizedBox(height: 2.h),
                   CustomButton(
-                    onTap: () {
-                      _authController.signUp(
-                          _emailController.text.trim(),
-                          _passwordController.text.trim()
+                    onTap: () async {
+                      _authController.login(
+                        _emailController.text.trim(),
+                        _passwordController.text.trim(),
                       );
                     },
                     widget: Text(
-                      "Sign Up",
+                      "Sign in",
                       style: TextStyle(
                         fontSize: 18.sp,
                         fontWeight: FontWeight.w500,
@@ -141,12 +136,12 @@ class _SignUpState extends State<SignUp> {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text("Already have an account?"),
+                Text("Don't have an account?"),
                 TextButton(
                   onPressed: () {
-                    Get.to(() => Login());
+                    Get.to(() => SignUp());
                   },
-                  child: Text("Sign In"),
+                  child: Text("Sign Up"),
                 ),
               ],
             ),
